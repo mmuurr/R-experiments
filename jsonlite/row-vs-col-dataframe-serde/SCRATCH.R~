@@ -1,0 +1,127 @@
+library(tidyverse)
+
+new_df <- function() {
+  tibble::tibble(foo = runif(10), bar = -runif(10))
+}
+
+dfs <- map(seq_len(10), function(i) new_df())
+
+serialize.by_row <- function(df) jsonlite::toJSON(df, dataframe = "rows")
+deserialize.by_row <- function(json) json %>% jsonlite::fromJSON(simplifyDataFrame = TRUE) %>% as_tibble()
+
+serialize.by_col <- function(df) jsonlite::toJSON(df, dataframe = "columns")
+deserialize.by_col <- function(json) json %>% jsonlite::fromJSON() %>% as_tibble()
+
+rename.snakecase <- function(df) {
+  names(df) <- snakecase::to_upper_camel_case(names(df))
+  df
+}
+rename.rename <- function(df) {
+  dplyr::rename(df, Foo = foo, Bar = bar)
+}
+rename.select <- function(df) {
+  dplyr::select(df, Foo = foo, Bar = bar)
+}
+
+deserialize.by_row.manual <- function(json) {
+  json %>%
+    jsonlite::fromJSON(simplifyDataFrame = FALSE) %>%
+    {
+      tibble::tibble(
+        foo = map_dbl(., "foo", .default = NA_real_),
+        bar = map_dbl(., "bar", .default = NA_real_)
+      )
+    }
+}
+
+deserialize.by_col.manual <- function(json) {
+  json %>%
+    jsonlite::fromJSON(simplifyDataFrame = FALSE) %>%
+    {
+      tibble::tibble(
+        foo = pluck(., "foo", .default = NA_real_),
+        bar = pluck(., "bar", .default = NA_real_)
+      )
+    }
+}
+
+microbenchmark::microbenchmark(
+  jsons.by_row <- map(dfs, serialize.by_row),
+  jsons.by_col <- map(dfs, serialize.by_col)
+)
+
+microbenchmark::microbenchmark(
+  map(jsons.by_row, deserialize.by_row),
+  map(jsons.by_col, deserialize.by_col),
+  map(jsons.by_row, deserialize.by_row.manual),
+  map(jsons.by_col, deserialize.by_col.manual)
+)
+
+microbenchmark::microbenchmark(
+  map(jsons.by_row, deserialize.by_row) %>% map(rename.snakecase),
+  map(jsons.by_col, deserialize.by_col) %>% map(rename.snakecase)
+)
+
+microbenchmark::microbenchmark(
+  map(jsons.by_row, deserialize.by_row) %>% map(rename.rename),
+  map(jsons.by_col, deserialize.by_col) %>% map(rename.rename)
+)
+
+microbenchmark::microbenchmark(
+  map(jsons.by_row, deserialize.by_row) %>% map(rename.select),
+  map(jsons.by_col, deserialize.by_col) %>% map(rename.select)
+)
+
+
+
+x <- map(seq_len(1e6), function(i) {
+  list(foo = runif(10))
+})
+microbenchmark::microbenchmark(walk(x, function(x) x$foo), times = 1)
+
+x <- map(seq_len(1e6), function(i) {
+  list(foo = runif(10))
+})
+microbenchmark::microbenchmark(walk(x, function(x) x[["foo"]]), times = 1)
+
+x <- map(seq_len(1e6), function(i) {
+  list(foo = runif(10))
+})
+microbenchmark::microbenchmark(walk(x, function(x) pluck(x, "foo")), times = 1)
+
+
+df <- new_df()
+microbenchmark::microbenchmark(
+{
+  json <- jsonlite::toJSON(df)
+  json %>%
+    jsonlite::fromJSON(simplifyDataFrame = TRUE)
+},
+{
+  json <- jsonlite::toJSON(df)
+  json %>%
+    jsonlite::fromJSON(simplifyDataFrame = FALSE) %>%
+    { tibble::tibble(
+      foo = map_dbl(., "foo", .default = NA_real_),
+      bar = map_dbl(., "bar", .default = NA_real_)
+    ) }
+},
+{
+  json <- jsonlite::toJSON(df, dataframe = "columns")
+  json %>%
+    jsonlite::fromJSON(simplifyDataFrame = TRUE)
+},
+{
+  json <- jsonlite::toJSON(df, dataframe = "columns")
+  json %>%
+    jsonlite::fromJSON(simplifyDataFrame = FALSE) %>%
+    { tibble::tibble(foo = .$foo, bar = .$bar) }
+},
+{
+  json <- jsonlite::toJSON(df, dataframe = "columns")
+  json %>%
+    jsonlite::fromJSON(simplifyDataFrame = FALSE) %>%
+    tibble::as_tibble()
+},
+times = 1e3
+)

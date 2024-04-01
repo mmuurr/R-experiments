@@ -1,0 +1,9 @@
+b <- import("b")
+print(ls(b))
+
+val_b <- "module b!"
+
+fun_f <- function() {
+  b$f()
+}
+

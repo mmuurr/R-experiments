@@ -1,0 +1,80 @@
+LGR <- lgr::lgr
+LGR$add_appender(lgr::AppenderConsole$new(layout = lgr::LayoutJson$new()))
+LGR$add_appender(lgr::AppenderConsole$new(layout = lgr::LayoutGlue$new("{pad_right(colorize_levels(toupper(level_name)), 5)} [{timestamp}] {msg}")))
+
+LGR$info("foo")
+LGR$info("foo", bar = "baz")
+LGR$info("foo {1:10}")
+
+
+R6MixinBase <- R6::R6Class(
+  classname = "R6MixinBase",
+  cloneable = TRUE,
+  private   = list(
+    finalize = function() self$.parent <- NULL
+  ),
+  public    = list(
+    .parent = NULL,
+    initialize = function(...) stop("can't create a stand-alone mixin object"),
+    init = function(parent) self$.parent <- parent
+  )
+)
+
+R6MixinLgr <- R6::R6Class(
+  classname  = "R6MixinLgr",
+  inherit    = R6MixinBase,
+  cloneable  = TRUE,
+  private    = list(
+    finalize = function() {
+      self$.lgr__set(NULL)
+      super$finalize()
+    }
+  ),
+  public     = list(
+    .lgr = NULL,
+    .lgr__get = function() .lgr %||% LGR,
+    .lgr__set = function(lgr = NULL) self$.lgr <- lgr,
+    .logmsg = function(msg = NULL) {
+      class_name <- class(self$.parent)[1]
+      env_label <- rlang::env_label(self$.parent)
+      sprintf("%s[%s] %s", class_name, env_label, msg)
+    },
+    initialize = function(parent, lgr = NULL) self$init(parent, lgr),
+    init = function(parent, lgr = NULL) {
+      super$init(parent)
+      self$.lgr__set(lgr)
+    },
+    log = function(level, msg, ...) {
+      self$.lgr__get()$log(level, self$.logmsg(msg), ...)
+    }
+  )
+)
+
+R6MixinFormat <- R6::R6Class(
+  classname  = "R6MixinFormat",
+  inherit    = R6MixinBase,
+  cloneable  = TRUE,
+  public     = list(
+    init     = function(parent) {
+      super$init(parent)
+    },
+    format   = function() {
+      deparse(self$.parent)
+    }
+  )
+)
+
+Klass <- R6::R6Class(
+  classname  = "Klass",
+  inherit    = NULL,
+  cloneable  = FALSE,
+  public     = list(
+    .mixins = list(),
+    initialize = function(...) {
+      self$.mixins$lgr    <- R6MixinLgr$new(self, LGR)
+      self$.mixins$format <- R6MixinFormat$new(self)
+    },
+    .log = function(level, msg, ...) {
+      self$.mixins$lgr$log(level, msg, ...)
+    }
+  )

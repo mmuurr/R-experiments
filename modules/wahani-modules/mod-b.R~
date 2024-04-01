@@ -1,0 +1,18 @@
+print(search())
+
+## lapply(options()$defaultPackages, function(x) {
+##   print(x)
+##   do.call(
+##     modules::import,
+##     list(
+##       str2lang(x),
+##       attach = TRUE
+##     )
+##   )
+## })
+## print(search())
+## print(head(iris))  ## iris is in the "datasets" package
+
+b <- function(df) nrow(df)
+
+modules::export(b)

@@ -1,0 +1,5 @@
+modules::import_package("tibble", attach = TRUE)
+modules::import("mod-b", attach = TRUE)
+
+dim(iris)
+as_tibble(iris)

@@ -1,0 +1,4 @@
+tbl <- tibble::tibble(x = 1:5, y = letters[1:5])
+output <- pmap(tbl, function(...) with(list(...), {
+  iris |> dplyr::slice(x)
+}))

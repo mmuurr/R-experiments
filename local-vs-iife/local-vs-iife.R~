@@ -1,0 +1,9 @@
+f1 <- local({
+  x <- 1
+  function() x
+})
+
+f2 <- (function() {
+  x <- 2
+  function() x
+})()

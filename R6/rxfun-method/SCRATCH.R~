@@ -1,0 +1,26 @@
+library(tidyverse)
+
+invalidator <- function() {
+  .count <- 0
+  .rxval <- shiny::reactiveVal(.count)
+  invalidate <- function() {
+    .count <<- .count + 1
+    .rxval(.count)
+  }
+  depend <- function() {
+    .rxval()
+  }
+  list(
+    invalidate = invalidate,
+    depend = depend
+  )
+}
+
+Klass1 <- R6::R6Class(
+  classname = "Klass1",
+  inherit = NULL,
+  clonable = FALSE,
+  public = list(
+    initialize = function() {}
+  )
+)

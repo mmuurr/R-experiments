@@ -1,0 +1,2 @@
+#' @export
+utils <- "alphabet utilities"

@@ -1,0 +1,7 @@
+later::later(function() {
+  print("foo")
+}, 2)
+
+Sys.sleep(4)
+
+print("bar")

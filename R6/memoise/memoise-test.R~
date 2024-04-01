@@ -1,0 +1,9 @@
+R6::R6Class(
+  private = list(
+    x = 10
+  ),
+  public = list(
+    get_x = function() private$x,
+    set_x = function(x) private$x <- x
+  )
+)

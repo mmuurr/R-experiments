@@ -1,0 +1,4 @@
+other_order <- function(x) {
+    iix <- order(x, decreasing = TRUE, na.last = TRUE)
+    iix[!is.na(x[iix])]
+}

@@ -1,0 +1,30 @@
+Klass1 <- R6::R6Class(
+  classname = "Klass1",
+  inherit = NULL,
+  cloneable = FALSE,
+
+  private = list(
+    listenv_funs = listenv::listenv(
+      f1 = function() self$x
+    ),
+    iife_closure_funs = (function() {
+      print("hello")
+      list(
+        f1 = function() self$x
+      )
+    })()
+  ),
+
+  public = list(
+    x = NULL,
+    initialize = function(x) {
+      self$x <- x
+    },
+    f1 = function() {
+      try(private$listenv_funs$f1())
+      try(private$iife_closure_funs$f1())
+    }
+  )
+)
+
+o1 <- Klass1$new(1)

@@ -1,0 +1,5 @@
+b <- modules::use("b.R")
+
+fun_a <- function() {
+  b$fun_b()
+}

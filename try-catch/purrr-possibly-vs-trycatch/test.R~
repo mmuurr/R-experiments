@@ -1,0 +1,4 @@
+microbenchmark::microbenchmark(
+  tryCatch(TRUE, error = function(e) FALSE),
+  purrr::possibly(function() TRUE, FALSE)()
+)

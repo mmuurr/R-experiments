@@ -1,0 +1,18 @@
+library(R6)
+
+Val <- R6Class("Val",
+  inherit = NULL,
+  cloneable = TRUE,
+  private = list(
+    priv_val = NULL
+  ),
+  public = list(
+    pub_val = NULL,
+    initialize = function(val) {
+      private$priv_val <- val
+      self$pub_val <- val
+    }
+  )
+)
+
+Wrapper

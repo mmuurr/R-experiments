@@ -1,0 +1,19 @@
+Package: testpkg
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Murat",
+           family = "Tasan",
+           role = c("aut", "cre"),
+           email = "mmuurr@gmail.com")
+Description: What the package does (one paragraph).
+License: file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+NeedsCompilation: no
+Packaged: 2021-07-04 00:08:58 UTC; mur
+Author: Murat Tasan [aut, cre]
+Maintainer: Murat Tasan <mmuurr@gmail.com>
+Built: R 4.0.3; ; 2021-07-04 00:09:02 UTC; unix

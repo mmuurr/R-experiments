@@ -1,0 +1,6 @@
+## no explicit return() in error-handler:
+tryCatch({
+  stop("foo")
+}, error = function(e) {
+  print(conditionMessage(e))
+})

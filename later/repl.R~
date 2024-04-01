@@ -1,0 +1,12 @@
+LGR <- lgr::lgr
+LGR$set_threshold("trace")
+
+later::later(function() {
+  LGR$info("deferred")
+}, 2)
+
+LGR$info("main: about to sleep")
+Sys.sleep(4)
+LGR$info("main: back from sleep")
+
+

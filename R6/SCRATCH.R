@@ -1,0 +1,165 @@
+library(tidyverse)
+
+##========================================
+## All items in public, private, and active must have unique names (across the entire class).
+## The below fails.
+##========================================
+if (FALSE) {
+
+  Klass1 <- R6::R6Class("Klass1",
+    private = list(
+      field1 = NULL
+    ),
+    
+    public = list(
+      field1 = NULL
+    )
+  )
+  
+}
+
+
+##========================================
+## Can one make deep-edits into objects returned by active bindings?
+##========================================
+if (FALSE) {
+
+  Klass2 <- R6::R6Class("Klass2",
+    private = list(
+      .field1 = list(foo = 1:3)  ## note the dot-prefix
+    ),
+    active = list(
+      field1 = function() {
+        private$.field1
+      }
+    )
+  )
+
+  x <- Klass2$new()
+
+  x$field1
+
+  x$field1 <- NULL  ## this will fail, not settable because the active binding takes zero args
+
+  x$field1$foo <- 3:1  ## but what about this?
+
+  x$field1
+
+}
+
+
+##========================================
+## The `super` field seems to expose `private`, `active`, and `public` members in the same namespace (explaining why those need to be unique).
+## But this might be confusing to a subclass implementor ... can one be specific, at least in the `private` and `public` sense (since `active` bindings are just special publics).
+##
+## Conclusions (from the below):
+## * `super` only provides access to superclass _methods_, not fields.
+## * `super` puts those methods on the same plane, regardless of public, active, or private status.
+##========================================
+
+Klass1 <- R6::R6Class("Klass1",
+  private = list(
+    private_field = "private field",
+    private_method = function() print("private method")
+  ),
+  active = list(
+    active_field = function() "active field (is a special method)"
+  ),
+  public = list(
+    public_field = "public field",
+    public_method = function() print("public method"),
+    initialize = function() {
+      print("Klass1 constructor")
+    }
+  )
+)
+
+Klass2 <- R6::R6Class("Klass2",
+  inherit = Klass1,
+  public = list(
+    initialize = function() {
+      print("Klass2 constructor")
+      print(as.list(super))
+      print(self$public_field)
+    }
+  )
+)
+x <- Klass2$new()
+
+
+
+
+
+
+
+Foo <- R6::R6Class("Foo",
+  private = list(
+    data = list(
+      val = 0,
+      set = function(x) private$data$val <- x,
+      get = function() parent.env(environment())
+    )
+  ),
+  public = list(
+    set = function(x) private$data$set(x),
+    get = function() ls(environment())#private$data$get()
+  )
+)
+foo <- Foo$new()
+foo$get()
+
+
+Foo2 <- R6::R6Class("Foo2",
+  public = list(
+    data = list(
+      val = 0,
+      set = function(x) self$data$val <- x,
+      get = function() self$data$val
+    )
+  )
+)
+
+
+
+Nope <- R6::R6Class(classname = "Nope",
+  private = list(
+    x = list(
+      nested_field = 0,
+      nested_method = function() {
+        private$x$nested_field <- private$x$nested_field + 1
+        private$x$nested_field  ## return value
+      }
+    )
+  ),
+  public = list(
+    incr = function() private$x$nested_method()
+  )
+)
+
+Yup <- R6::R6Class(classname = "Yup",
+  private = list(
+    x = list(
+      nested_field = 0,
+      nested_method = NULL
+    )
+  ),
+  public = list(
+    initialize = function() {
+      private$x$nested_method <- function() {
+        private$x$nested_field <- private$x$nested_field + 1
+      }
+    },
+    incr = function() private$x$nested_method()
+  )
+)
+
+
+nope <- Nope$new()
+nope$incr()
+
+yup1 <- Yup$new()
+yup2 <- Yup$new(
+
+str(yup1$incr())
+str(yup2$incr())
+str(yup1$incr())

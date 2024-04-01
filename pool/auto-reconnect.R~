@@ -1,0 +1,19 @@
+library(tidyverse)
+library(DBI)
+library(pool)
+
+pool <- dbPool(
+  drv = RPostgres::Postgres(),
+  host = "localhost",
+  dbname = "trivia",
+  user = "trivia",
+  validateQuery = "select 1",
+  validationInterval = 10
+)
+
+dbGetQuery(pool, "select 1")
+
+## now break the connection from within PostgreSQL
+
+dbGetQuery(pool, "select 1")
+dbGetQuery(pool, "select 1")

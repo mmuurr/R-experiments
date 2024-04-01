@@ -1,0 +1,4 @@
+x <- c("all_or_NOTHing", "fractional", NA, "Fractional   ")
+
+GradeMode <- SimpleEnum(c("all_or_nothing", "fractional"))
+

@@ -1,0 +1,8 @@
+r_default_packages <- function(.datasets = FALSE) {
+  pkgs <- options()$default_packages
+  if ("methods" %in% pkgs) pkgs <- unique(c("methods", pkgs))
+  pkgs
+}
+
+r_default_packages <- options()$default_packages
+if ("methods" %in% r_default_packages) r_re

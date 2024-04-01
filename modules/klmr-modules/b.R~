@@ -1,0 +1,8 @@
+a <- import("a")
+
+val_b <- "module b!"
+
+fun_b <- function() {
+  print(a$val_a)
+  print(val_b)
+}

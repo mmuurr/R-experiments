@@ -1,0 +1,38 @@
+library(magrittr)
+library(promises)
+
+# Block until all pending later tasks have executed
+wait_for_it <- function(timeout = 30) {
+  start <- Sys.time()
+  while (!later::loop_empty()) {
+    if (difftime(Sys.time(), start, units = "secs") > timeout) {
+      stop("Waited too long")
+    }
+    later::run_now()
+    Sys.sleep(0.01)
+  }
+}
+
+# Block until the promise is resolved/rejected. If resolved, return the value.
+# If rejected, throw (yes throw, not return) the error.
+extract <- function(promise) {
+  promise_value <- NULL
+  promise_error <- NULL
+  promise %>%
+    then(function(x) promise_value <<- x) %>%
+    catch(function(x) promise_error <<- x)
+
+  wait_for_it()
+  if (!is.null(promise_error)) stop(promise_error) else return(promise_value)
+}
+
+x <-
+  promise_resolve(0) %>%
+  then(function(val) {
+    print("first then")
+    val + 1
+  }) %>%
+  then(function(val) {
+    print("second then")
+    val + 1
+  })

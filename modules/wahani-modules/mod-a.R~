@@ -1,0 +1,16 @@
+#modules::import("tidyverse")
+modules::import("tibble")
+mod_b <- modules::use("mod-b.R")
+print(search())
+
+
+f <- function(df) {
+  as_tibble(df)
+}
+
+g <- function(df) g(df)
+
+.h <- function(df) f(df)
+
+modules::export(exported_f = f, exported_h = .h)
+

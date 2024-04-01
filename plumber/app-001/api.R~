@@ -1,0 +1,6 @@
+library(magrittr)
+library(tidyverse)
+library(plumber)
+
+options_plumber(
+)

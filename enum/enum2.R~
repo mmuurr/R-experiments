@@ -1,0 +1,44 @@
+box::use(rlang[...])
+box::use(vctrs[...])
+
+x <- c("fractional", "all_or_nothing", "all_or_NOTHING", TRUE)
+
+SimpleEnum <- R6::R6Class(
+  public = list(
+    symbols = character(0),
+    initialize = function(classname, ...) {
+      print(vapply(eval(substitute(alist(...))), deparse, character(1)))
+    }
+  )
+)
+
+SimpleEnum$new("GradeMode", FRACTIONAL, ALL_OR_NOTHING)
+
+
+GradeMode$new(x)
+GradeMode$values$FRACTIONAL
+
+
+GradeMode <- SimpleEnum$new("GradeMode", ALL_OR_NOTHING, FRACTIONAL)
+
+
+## Usage:
+x <- c("fractional", "fractional", "all_or_nothing", "foo", NA_character_)
+GradeMode$val$FRACTIONAL
+GradeMode$val$ALL_OR_NOTHING
+GradeMode$cast(x)
+
+dplyr::case_when(GradeMode$cast(x),
+  GradeMode$val$FRACTIONAL      ~ "deal with fractional",
+  GradeMode$val$ALL_OR_NOTHING  ~ "deal with all_or_nothing",
+  TRUE                          ~ "fallback behavior"
+)
+
+## somewhat nicer using with():
+
+with(GradeMode, dplyr::case_when(cast(x),
+  val$FRACTIONAL      ~ "deal with fractional",
+  val$ALL_OR_NOTHING  ~ "deal with all_or_nothing",
+  TRUE                ~ "fallback behavior"
+))
+
